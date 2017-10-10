@@ -1,20 +1,18 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
+title: "rMarkdownStepsAnalysis"
 author: "JeremiShane"
-output: 
-  html_document:
-    keep_md: true
+date: "10/7/2017"
+output: html_document
 ---
 
-
-## Loading and preprocessing the data
+## Load Data
 First step, read in the data file activity.csv
 ```{r Read Activity Data}
 dfa <- read.csv("activity.csv")
 str(dfa)  ## quick look at the data
 ```
 ## Libraries
-plyr, dplyr, mice, VIM, ggplot2
+load plyr and dplyr libraries
 ```{r libraries, include=FALSE}
 library(plyr)
 library(dplyr)
@@ -23,24 +21,22 @@ library(VIM)
 library(ggplot2)
 ```
 
-
-## What is mean total number of steps taken per day?
+## What is the mean total number of steps taken per day?
 ```{r daily total steps}
 dfs <- dfa %>% group_by(date) %>% summarise(steps = sum(steps))
 par(mfrow=c(1,2))
 hist(dfs$steps, xlab="Total Steps per Day", main="Histogram")
 boxplot(dfs$steps, main="Boxplot of Total Steps per Day")
 summary(dfs$steps)  ## sum of steps grouped by date
-``` 
+```  
 
-
-## What is the average daily activity pattern?
+## What is the average daily activity pattern?  
 group by time interval and calculate the mean number of steps per interval accross all days
 ```{r Average steps per time interval}
 dft <- dfa %>% group_by(interval) %>% summarise(steps = mean(steps, na.rm=TRUE))
 par(mfrow=c(1,1))
-plot(dft$interval, dft$steps, type="l")  ## time series of steps accross interval
-```  
+plot(dft$interval, dft$steps, type="l")  
+``` 
 
 Which time interval on average has the most steps?
 ```{r max steps interval}
@@ -48,77 +44,68 @@ dmax <- dft[ dft$steps == max(dft$steps), ]
 dmax
 ```  
 
-
-## Imputing missing values  
+## Impute Missing Values
+How many missing values do we have?
 resource reference: https://stats.idre.ucla.edu/r/faq/how-do-i-perform-multiple-imputation-using-predictive-mean-matching-in-r/  
 
-How many missing values do we have?
 ```{r}
 sum(is.na(dfa$steps))
 sum(!is.na(dfa$steps))
-```  
-
+```
 Let's look at the patterns for our missing data.  
 The pattern rr represents the number of observations where both pairs of values are observed.  
 The pattern rm represents the exact opposite, these are the number of observations where both variables are missing values.  
 The pattern mr shows the number of observations where the first variable’s value (e.g. the row variable) is observed and second (or column) variable is missing.  
 The pattern mm is just the opposite.  
-
 ```{r missing data patterns}
 md.pairs(dfa)
-```  
-
+```
 This grid represents the missing data patterns present.  
-
 ```{r missing data pattern}
 md.pattern(dfa)
-```  
-
+```
 
 Let's visually explore the missing data.  
 Under the Missing Completely at Random (MCAR) assumption the red and blue box plots should be identical  
 These plots indicate a even distributuion of missing values accross the intervals, but there only seem to be missing values for a limited number of days.  
-
 ```{r missing data plots}
 par(mfrow=c(1,2))
 is <- data.frame(interval=dfa$interval, steps=dfa$steps)
 ds <- data.frame(date=dfa$date, steps=dfa$steps)
 marginplot(is)
 marginplot(ds)
-```   
+```  
 
-
-Overlap of the boxplots is a good indication of MCAR  
-So we can use "mice" package to to predict the missing values.   
+We could further explore the randomness of the missing values with pbox()  
+and see that the box plots do overlap as above and there is a good indication of MCAR  
+So we can use "mice" package to to predict the missing values. 
 
 ```{r impute with pmm}
 set.seed(7)
 imp1 <- mice(dfa)  ## default is pmm with m (imputations) = 5
-imp1  ## we have five sets of imputed data / 5 imputations
+imp1
 ```  
 
 Let's see how our imputed data compares to our original data.  
 ```{r imputed vs. original}
 dfs <- dfa %>% group_by(date) %>% summarise(steps = sum(steps))
-
 dfi <- complete(imp1)  ## first imputation
 dfsi <- dfi %>% group_by(date) %>% summarise(steps=sum(steps))
 
 par(mfrow=c(1,2))
 hist(dfs$steps, xlab="Total Steps per Day", main="Histogram")
 boxplot(dfs$steps, main="Boxplot of Total Steps per Day")
-summary(dfs$steps)  ## original data
+summary(dfs$steps)
 
 hist(dfsi$steps, xlab="Total Steps per Day", main="Imputed Histogram")
 boxplot(dfsi$steps, main="Boxplot of Total Steps per Day")
-summary(dfsi$steps)  ## first imputation
-```   
+summary(dfsi$steps)
+```  
 
 The data are very similar, but we do see an increase in the mean and median for our imputed data.  
-
-
+  
 ## Are there differences in activity patterns between weekdays and weekends?
-first we will use our imputed dfi dataset and determine which days are weekdays and which are weekends.  
+we will use our imputed dfi dataset and determine which days are weekdays and which are weekends.  
 
 ```{r weekdays}
 dfi$weektime <- ifelse(weekdays(as.POSIXct(dfi$date)) %in% c("Saturday", "Sunday"), "weekend", "weekday")
@@ -126,6 +113,4 @@ dfw <- dfi %>% group_by(weektime, interval) %>% summarise(steps=sum(steps))
 ts <- ggplot(dfw, aes(y=steps, x=interval))
 ts <- ts + geom_line() + facet_grid(.~ weektime)
 ts
-```  
-
-We do see a large spike during the weekdays vs. the weekends, and an overall lower rate of activity on the weekends.  
+```
