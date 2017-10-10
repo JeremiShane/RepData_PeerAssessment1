@@ -9,7 +9,7 @@ output:
 
 ## Loading and preprocessing the data
 First step, read in the data file activity.csv
-```{r Read Activity Data}
+```{r ReadActivityData}
 dfa <- read.csv("activity.csv")
 str(dfa)  ## quick look at the data
 ```
@@ -25,7 +25,7 @@ library(ggplot2)
 
 
 ## What is mean total number of steps taken per day?
-```{r daily total steps}
+```{r dailytotalsteps}
 dfs <- dfa %>% group_by(date) %>% summarise(steps = sum(steps))
 par(mfrow=c(1,2))
 hist(dfs$steps, xlab="Total Steps per Day", main="Histogram")
@@ -36,14 +36,14 @@ summary(dfs$steps)  ## sum of steps grouped by date
 
 ## What is the average daily activity pattern?
 group by time interval and calculate the mean number of steps per interval accross all days
-```{r Average steps per time interval}
+```{r AverageStepsPerTimeInterval}
 dft <- dfa %>% group_by(interval) %>% summarise(steps = mean(steps, na.rm=TRUE))
 par(mfrow=c(1,1))
 plot(dft$interval, dft$steps, type="l")  ## time series of steps accross interval
 ```  
 
 Which time interval on average has the most steps?
-```{r max steps interval}
+```{r maxStepsInterval}
 dmax <- dft[ dft$steps == max(dft$steps), ]
 dmax
 ```  
@@ -64,13 +64,13 @@ The pattern rm represents the exact opposite, these are the number of observatio
 The pattern mr shows the number of observations where the first variable’s value (e.g. the row variable) is observed and second (or column) variable is missing.  
 The pattern mm is just the opposite.  
 
-```{r missing data patterns}
+```{r missingDataPatterns}
 md.pairs(dfa)
 ```  
 
 This grid represents the missing data patterns present.  
 
-```{r missing data pattern}
+```{r missingDataPattern}
 md.pattern(dfa)
 ```  
 
@@ -79,7 +79,7 @@ Let's visually explore the missing data.
 Under the Missing Completely at Random (MCAR) assumption the red and blue box plots should be identical  
 These plots indicate a even distributuion of missing values accross the intervals, but there only seem to be missing values for a limited number of days.  
 
-```{r missing data plots}
+```{r missingDataPlots}
 par(mfrow=c(1,2))
 is <- data.frame(interval=dfa$interval, steps=dfa$steps)
 ds <- data.frame(date=dfa$date, steps=dfa$steps)
@@ -89,9 +89,15 @@ marginplot(ds)
 
 
 Overlap of the boxplots is a good indication of MCAR  
-So we can use "mice" package to to predict the missing values.   
+So we can use "mice" package to to predict the missing values.    
 
-```{r impute with pmm}
+MICE (Multivariate Imputation via Chained Equations) is one of the commonly used package by R users. Creating multiple imputations as compared to a single imputation (such as mean) takes care of uncertainty in missing values.  
+
+MICE assumes that the missing data are Missing at Random (MAR), which means that the probability that a value is missing depends only on observed value and can be predicted using them. It imputes data on a variable by variable basis by specifying an imputation model per variable.  
+
+Reference: https://www.analyticsvidhya.com/blog/2016/03/tutorial-powerful-packages-imputing-missing-values/  
+
+```{r imputeWithPredictiveMeanMatching}
 set.seed(7)
 imp1 <- mice(dfa)  ## default is pmm with m (imputations) = 5
 imp1  ## we have five sets of imputed data / 5 imputations

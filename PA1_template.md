@@ -30,7 +30,7 @@ hist(dfs$steps, xlab="Total Steps per Day", main="Histogram")
 boxplot(dfs$steps, main="Boxplot of Total Steps per Day")
 ```
 
-![](PA1_template_files/figure-html/daily total steps-1.png)<!-- -->
+![](PA1_template_files/figure-html/dailytotalsteps-1.png)<!-- -->
 
 ```r
 summary(dfs$steps)  ## sum of steps grouped by date
@@ -51,7 +51,7 @@ par(mfrow=c(1,1))
 plot(dft$interval, dft$steps, type="l")  ## time series of steps accross interval
 ```
 
-![](PA1_template_files/figure-html/Average steps per time interval-1.png)<!-- -->
+![](PA1_template_files/figure-html/AverageStepsPerTimeInterval-1.png)<!-- -->
 
 Which time interval on average has the most steps?
 
@@ -154,11 +154,17 @@ marginplot(is)
 marginplot(ds)
 ```
 
-![](PA1_template_files/figure-html/missing data plots-1.png)<!-- -->
+![](PA1_template_files/figure-html/missingDataPlots-1.png)<!-- -->
 
 
 Overlap of the boxplots is a good indication of MCAR  
-So we can use "mice" package to to predict the missing values.   
+So we can use "mice" package to to predict the missing values.    
+
+MICE (Multivariate Imputation via Chained Equations) is one of the commonly used package by R users. Creating multiple imputations as compared to a single imputation (such as mean) takes care of uncertainty in missing values.  
+
+MICE assumes that the missing data are Missing at Random (MAR), which means that the probability that a value is missing depends only on observed value and can be predicted using them. It imputes data on a variable by variable basis by specifying an imputation model per variable.  
+
+Reference: https://www.analyticsvidhya.com/blog/2016/03/tutorial-powerful-packages-imputing-missing-values/  
 
 
 ```r
