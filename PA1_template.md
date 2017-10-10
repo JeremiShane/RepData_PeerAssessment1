@@ -241,7 +241,7 @@ hist(dfs$steps, xlab="Total Steps per Day", main="Histogram")
 boxplot(dfs$steps, main="Boxplot of Total Steps per Day")
 ```
 
-![](PA1_template_files/figure-html/imputed vs. original-1.png)<!-- -->
+![](PA1_template_files/figure-html/imputedvs.original-1.png)<!-- -->
 
 ```r
 summary(dfs$steps)  ## original data
@@ -257,7 +257,7 @@ hist(dfsi$steps, xlab="Total Steps per Day", main="Imputed Histogram")
 boxplot(dfsi$steps, main="Boxplot of Total Steps per Day")
 ```
 
-![](PA1_template_files/figure-html/imputed vs. original-2.png)<!-- -->
+![](PA1_template_files/figure-html/imputedvs.original-2.png)<!-- -->
 
 ```r
 summary(dfsi$steps)  ## first imputation
